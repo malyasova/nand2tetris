@@ -1,0 +1,76 @@
+class Player{
+    field int x, y;
+    field bool has_ball;
+    field Ball ball;
+    constructor Player new(int Ax, int Ay){
+        let x = Ax;
+        let y = Ay;
+        let has_ball = false;
+        return this;
+    }
+    method void dispose(){
+        if(has_ball){
+            do ball.dispose();
+        }
+        do Memory.deAlloc(this);
+        return;
+    }
+    method void draw(){
+        var int location, color;
+        let location = (512 * y) + x;
+        if (~(has_ball)){
+        	do Draw.player(location);
+        } else {
+            let color = ball.color();
+        	if (color = 0){
+        		do Draw.player_holding_white_ball(location);
+        	}
+        	if (color = 1){
+        		do Draw.player_holding_grey_ball(location);
+        	}
+        	if (color = 2){
+        		do Draw.player_holding_black_ball(location);
+        	}
+        }
+		return;
+    }
+    method bool is_at(int cell_x, int cell_y){
+    	return((x = cell_x)&(y = cell_y));
+    }
+    method int x(){
+        return x;
+    }
+    method int y(){
+        return y;
+    }
+    method bool has_ball(){
+        return has_ball;
+    }
+    method void pickBall(Ball b){
+    	let has_ball = true;
+    	let ball = b;
+    	do draw();
+    	return;
+    }
+    method Ball dropBall(){
+    	let has_ball = false;
+    	do draw();
+    	return ball;
+    }
+    method void moveUp(){
+        let y = y - 1;
+        return;
+    }
+    method void moveDown(){
+        let y = y + 1;
+        return;
+    }
+    method void moveLeft(){
+        let x = x - 1;
+        return;
+    }
+    method void moveRight(){
+        let x = x + 1;
+        return;
+    }
+}

@@ -1,0 +1,28 @@
+/** Rules of the game: 
+there is a grid with colored balls in some cells
+each turn:
+-3 more balls appear in random empty places
+-a player may carry one ball to a different cell. When a player does not hold a ball, he can move to any cell; when he holds a ball, he can only step on empty cells.
+-whenever 5 or more balls of the same color are lying on a horizontal, 
+vertical or diagonal line next to each other while not being held by the player, they disappear. If several such lines intersect, 
+they all disappear.
+-game ends when there are no empty cells left
+Controls:
+The player moves across the grid using arrow keys, picks up and drops the ball with Space.
+*/
+class Main {
+    function void main() {
+        var Game game;
+        //after player loses, he may choose to restart or quit the game
+        var bool restart;
+        let restart = true;
+        while (restart){
+            let game = Game.new(10, 10);
+            // game.run() returns true iff the player wants to play again
+            let restart = game.run();
+        }
+        do game.dispose();
+        return;
+    }
+}
+

@@ -1,0 +1,14 @@
+class Ball{
+    field int color;
+    constructor Ball new(int c){
+        let color = c;
+        return this;
+    }
+    method void dispose(){
+        do Memory.deAlloc(this);
+        return;
+    }
+    method int color(){
+        return color;
+    }
+}

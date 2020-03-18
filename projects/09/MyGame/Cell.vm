@@ -1,0 +1,87 @@
+function Cell.new 0
+push constant 5
+call Memory.alloc 1
+pop pointer 0
+push argument 0
+pop this 0
+push argument 1
+pop this 1
+push constant 512
+push this 1
+call Math.multiply 2
+push this 0
+add
+pop this 2
+push constant 0
+pop this 3
+push pointer 0
+return
+function Cell.dispose 0
+push argument 0
+pop pointer 0
+push this 3
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push this 4
+call Ball.dispose 1
+pop temp 0
+label IF_FALSE0
+push pointer 0
+call Memory.deAlloc 1
+pop temp 0
+push constant 0
+return
+function Cell.x 0
+push argument 0
+pop pointer 0
+push this 0
+return
+function Cell.y 0
+push argument 0
+pop pointer 0
+push this 1
+return
+function Cell.location 0
+push argument 0
+pop pointer 0
+push this 2
+return
+function Cell.color 0
+push argument 0
+pop pointer 0
+push this 3
+not
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push constant 3
+return
+goto IF_END0
+label IF_FALSE0
+push this 4
+call Ball.color 1
+return
+label IF_END0
+function Cell.dropBall 0
+push argument 0
+pop pointer 0
+push argument 1
+pop this 4
+push constant 0
+not
+pop this 3
+push constant 0
+return
+function Cell.getBall 0
+push argument 0
+pop pointer 0
+push constant 0
+pop this 3
+push this 4
+return
+function Cell.has_ball 0
+push argument 0
+pop pointer 0
+push this 3
+return

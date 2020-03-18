@@ -1,0 +1,47 @@
+class Cell{
+    //x and y are grid coordinates. location is screen location necessary for drawing
+    field int x, y, location;
+    field bool has_ball;
+    field Ball ball; //reference to a ball that may be stored in the cell
+    constructor Cell new(int Ax, int Ay){
+        let x = Ax;
+        let y = Ay;
+        let location = (512 * y) + x;
+        let has_ball = false;
+        return this;
+    }
+    method void dispose(){
+        if (has_ball) {do ball.dispose();}
+        do Memory.deAlloc(this);
+        return;
+    }
+    method int x(){
+        return x;
+    }
+    method int y(){
+        return y;
+    }
+    method int location(){
+        return location;
+    }
+    method int color(){
+        if(~has_ball){
+            return 3;
+        } else {
+            return ball.color();
+        }
+    }
+    
+    method void dropBall(Ball b){
+        let ball = b;
+        let has_ball = true;
+        return;
+    }
+    method Ball getBall(){
+        let has_ball = false;
+        return ball;
+    }
+    method bool has_ball(){
+        return has_ball;
+    }
+}

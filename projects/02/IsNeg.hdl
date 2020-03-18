@@ -1,0 +1,11 @@
+/**
+ * Is negative: 
+ * out = (in < 0)
+ */
+CHIP IsNeg {
+    IN in[16];
+    OUT out;
+
+    PARTS:
+    Mux(a = in[15], b = false, sel = false, out = out);
+}

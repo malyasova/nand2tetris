@@ -1,0 +1,368 @@
+/**
+The Game has a two-dimensional array of cells. Each cell may either be empty or have a ball.
+A player may also carry a ball. 
+*/
+class Game{
+    field int width, height;
+    field Player player; 
+    field Array2d grid;
+        
+    constructor Game new(int w, int h){
+        var int i, j;
+        var Cell cell;
+        let width = w;
+        let height = h;
+        //the player starts at (0,0)
+        let player = Player.new(0,0);
+        let grid = Array2d.new(w, h);
+        do Screen.clearScreen();
+        do player.draw(); 
+        return this;
+    }
+    method void dispose(){
+        do player.dispose();
+        do grid.dispose();
+        do Memory.deAlloc(this);
+        return;
+    }
+    method void draw(int x, int y){
+    //draw cell(x,y)
+        var bool has_player;
+        var Cell cell;
+        var int color, location;
+        let cell = grid.at(x,y);
+        let location = cell.location();
+        let has_player = (cell.x() = player.x()) & (cell.y() = player.y());
+        let color = cell.color();
+        if (has_player){
+            if (color = 0) {do Draw.player_and_white_ball(location);}
+		    if (color = 1) {do Draw.player_and_grey_ball(location);}
+		    if (color = 2) {do Draw.player_and_black_ball(location);}
+		    if (color = 3) {do player.draw();}
+        } else {
+            if (color = 0) {do Draw.white_ball(location);}
+		    if (color = 1) {do Draw.grey_ball(location);}
+		    if (color = 2) {do Draw.black_ball(location);}
+		    if (color = 3) {do Draw.empty_cell(location);}
+        }
+        return;
+    }
+    //Main method controlling the game:
+    //The player moves using arrow keys, picks up and drops the ball with space.
+    //Game can be quit with q or restarted with r.
+    method bool run(){
+        var char key;
+        var boolean exit, restart;
+        //initialize a random number generator
+        do LCGRandom.setSeed(0);
+        //game starts with width balls
+        do addBalls(width);
+        //explain game rules to the player
+        do Output.moveCursor(1, 24);
+        do Output.printString("Put 5 balls in a row to destroy them!");
+        do Output.moveCursor(4, 24);
+        do Output.printString("Controls:");
+        do Output.moveCursor(6, 24);
+        do Output.printString("Arrow keys to move");
+        do Output.moveCursor(8, 24);
+        do Output.printString("Space to pick/drop the ball");   
+        do Output.moveCursor(10, 24);
+        do Output.printString("R to restart, Q to quit");   
+             
+        let exit = false;
+        let restart = false;
+        while (~exit) {
+            // waits for a key to be pressed
+            while (key = 0) {
+                let key = Keyboard.keyPressed();
+            }
+            if (key = 81)  { let exit = true; }     // q key
+            if (key = 131) { do moveUp(); }   // up arrow
+            if (key = 133) { do moveDown(); }   // down arrow
+            if (key = 130) { do moveLeft(); }   // left arrow
+            if (key = 132) { do moveRight(); }   // right arrow
+            if (key = 82) { let exit = true; let restart = true; } //restart game
+            if (key = 32) { // space
+                if (player.has_ball()){ do dropBall(); }
+                                 else { do pickBall(); }
+            }
+            //wait for the key to be released
+            while (~(key = 0)) {
+                let key = Keyboard.keyPressed();
+            }
+        } // endwhile
+        
+        return restart;
+    }
+    /**  method int extend_line(int x, int y, int dx, int dy):
+    helper method for burn_lines:
+    calculates longest same-color extension from point (x,y) in direction (dx, dy)
+    dx, dy in {-1,0,1}
+    */
+    method int extend_line(int x, int y, int dx, int dy){
+        var int color;
+        var bool same_color;
+        var Cell cell, another_cell;
+        var int extension;
+        let extension = 0;
+        let same_color = true;
+        let cell = grid.at(x,y);
+        let color = cell.color();
+        while(((x + dx + 1) > 0) & ((x + dx) < width) & ((y + dy + 1) > 0) & ((y + dy) < height) & same_color){
+            let another_cell = grid.at(x + dx, y + dy);
+            if (another_cell.color() = color){
+                let x = x + dx;
+                let y = y + dy;
+                let extension = extension + 1;
+            } else {
+                let same_color = false;
+            }
+        }
+        return extension;
+    }
+    /** method void burn_lines(x, y):
+    destroys all lines of length >= 5 passing through the point (x, y) 
+    */
+    method void burn_lines(int x, int y){
+    	var int length; //the maximum length of surviving line. We set length = 4
+        var int n, e, s, w, ne, nw, se, sw, color;
+        var int horizontal, vertical, diag1, diag2;
+        var bool same_color;
+        var Cell cell, another_cell;
+        let length = 4;
+        let cell = grid.at(x,y);
+        let color = cell.color();
+        //we find the longest same-color extension of the current cell in 8 directions:
+        //n, e, s, w, ne, nw, se, sw. Then we destroy all lines that are sufficiently long.
+        
+        let e = extend_line(x,y,1,0);
+        let w = extend_line(x,y,-1,0);
+        let s = extend_line(x,y,0,1);
+        let n = extend_line(x,y,0,-1);
+        let ne = extend_line(x,y,1,-1);
+        let se = extend_line(x,y,1,1);
+        let nw = extend_line(x,y,-1,-1);
+        let sw = extend_line(x,y,-1,1);
+        let horizontal = e + w + 1;
+        let vertical = s + n + 1;
+        let diag1 = ne + sw + 1;
+        let diag2 = nw + se + 1;
+        if ((horizontal>length)|(vertical>length)|(diag1>length)|(diag2>length)){
+        	do cell.getBall();
+        	do draw(x,y);
+        }
+        if(horizontal>length){
+        	while(e > 0){
+            	let cell = grid.at(x+e,y);
+            	do cell.getBall();
+            	do draw(x+e,y);
+            	let e = e - 1;
+        	}
+        	while(w > 0){
+            	let cell = grid.at(x-w,y);
+            	do cell.getBall();
+            	do draw(x-w,y);
+            	let w = w - 1;
+        	}
+        }
+        if(vertical>length){
+        	while(n > 0){
+        		let cell = grid.at(x,y-n);
+        		do cell.getBall();
+        		do draw(x,y-n);
+        		let n = n - 1;
+        	}
+        	while(s > 0){
+        		let cell = grid.at(x,y+s);
+        		do cell.getBall();
+        		do draw(x,y+s);
+        		let s = s - 1;
+        	}
+        }
+        if(diag1 > length){
+            while(ne > 0){
+                let cell = grid.at(x+ne, y-ne);
+                do cell.getBall();
+                do draw(x+ne, y-ne);
+                let ne = ne - 1;
+            }
+            while(sw>0){
+            	let cell = grid.at(x-sw,y+sw);
+            	do cell.getBall();
+            	do draw(x-sw, y+sw);
+            	let sw = sw - 1;
+            }
+        }
+        if(diag2 > length){
+            while(nw>0){
+                let cell = grid.at(x-nw,y-nw);
+                do cell.getBall();
+                do draw(x-nw, y-nw);
+                let nw = nw - 1;
+            }
+            while(se>0){
+            	let cell = grid.at(x+se,y+se);
+            	do cell.getBall();
+            	do draw(x+se, y+se);
+            	let se = se - 1;
+            }
+        }
+        return;
+    }
+    /** method void addBalls(int k):
+    add k random balls to the Game */
+    method void addBalls(int k){
+        var int i, j, gamesize, n, x, y, color;
+        var Ball ball;
+        var Cell cell;
+        var bool gameover;
+        let i = 0;
+        let gameover = false;
+        while((i < k)&(~(gameover))){
+            let x = LCGRandom.randRange(0,(width-1));
+            let y = LCGRandom.randRange(0,(height-1));
+            let color = LCGRandom.randRange(0,2);
+            let ball = Ball.new(color);
+            let cell = grid.at(x,y);
+            let gamesize = width * height;
+            //iterate through the grid until an empty place is found or all grid is found to be full.
+            let j = 0;
+            while((cell.has_ball())&(j < gamesize)){
+                let j = j + 1;
+                if((y+1) < height){
+                    let y = y + 1;
+                } else {
+                    let y = 0;
+                    if ((x+1) < width){
+                        let x = x + 1;
+                    } else {
+                        let x = 0;
+                    }
+                }
+                let cell = grid.at(x,y);
+            }
+            
+            do cell.dropBall(ball);
+            do draw(x, y);
+            do burn_lines(x, y);
+            //if grid is full, player lost
+            if (j = gamesize){
+                let gameover = true;
+            } else {
+                let i = i + 1;
+            }
+        } //endwhile
+        if (gameover){ do GameOver();}
+        return;
+    }
+    /** method void GameOver():
+    Output a gameover screen
+    */
+    method void GameOver(){
+        do Screen.clearScreen();
+        do Output.moveCursor(10, 20);
+        do Output.printString("GAME OVER");
+        do Output.println();
+        do Output.moveCursor(12, 10);
+        do Output.printString("Press r to restart the game, q to quit");
+        return;
+    }
+    /** method void pickBall():
+    the player picks up a ball from the current cell, if there is a ball there
+    */
+    method void pickBall(){
+        var Cell cell;
+        var int x, y;
+        var Ball ball;
+        let x = player.x();
+        let y = player.y();
+        let cell = grid.at(x,y);
+        if (cell.has_ball()){
+        	let ball = cell.getBall();
+        	do player.pickBall(ball);
+        }
+        return;
+    }
+    /** method void dropBall():
+    the player drops the ball he is holding into the current cell
+    */
+    method void dropBall(){
+        var Cell cell;
+        var int x, y;
+        var Ball ball;
+        let x = player.x();
+        let y = player.y();
+        let cell = grid.at(x,y);
+        let ball = player.dropBall();
+        do cell.dropBall(ball);
+        do draw(x,y);
+        do burn_lines(x, y);
+        do addBalls(3);
+        return;
+    }
+    /**method void moveUp():
+    A player without a ball can always move,
+    but a player holding a ball can only move into an empty cell.
+    */
+    method void moveUp(){
+        var int x, y, color;
+        var Cell new_cell;
+        let x = player.x();
+        let y = player.y();
+        if (y > 0){
+    	    let new_cell = grid.at(x,y-1);
+    	    if (~new_cell.has_ball()|(~player.has_ball())){
+    	        do player.moveUp();
+    			do draw(x,y);
+    			do draw(x,y-1);
+    		}
+    	}
+    	return;
+    }
+    method void moveDown(){
+		var int x, y;
+		var Cell new_cell;
+		let x = player.x();
+		let y = player.y();
+		if ((y+1) < height){
+		    let new_cell = grid.at(x,y+1);
+		    if (~new_cell.has_ball()|(~player.has_ball())){
+    	        do player.moveDown();
+    			do draw(x,y);
+    			do draw(x,y+1);
+    		}
+    	}
+    	return;
+    }
+    method void moveLeft(){
+        var int x, y;
+        var Cell new_cell, old_cell;
+		let x = player.x();
+		let y = player.y();
+		if (x > 0){
+    		let new_cell = grid.at(x-1,y);
+    		if (~new_cell.has_ball()|(~player.has_ball())){
+    	        do player.moveLeft();
+    			do draw(x,y);
+    			do draw(x-1,y);
+    		}
+    	}
+    	return;
+    }
+    method void moveRight(){
+        var int x, y;
+        var Cell new_cell, old_cell;
+		let x = player.x();
+		let y = player.y();
+		if ((x+1) < width){
+    		let new_cell = grid.at(x+1,y);
+    		if (~new_cell.has_ball()|(~player.has_ball())){
+    	        do player.moveRight();
+    			do draw(x,y);
+    			do draw(x+1,y);
+    		}
+    	}
+    	return;
+    }
+}
+

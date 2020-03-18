@@ -1,0 +1,168 @@
+function Player.new 0
+push constant 4
+call Memory.alloc 1
+pop pointer 0
+push argument 0
+pop this 0
+push argument 1
+pop this 1
+push constant 0
+pop this 2
+push pointer 0
+return
+function Player.dispose 0
+push argument 0
+pop pointer 0
+push this 2
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push this 3
+call Ball.dispose 1
+pop temp 0
+label IF_FALSE0
+push pointer 0
+call Memory.deAlloc 1
+pop temp 0
+push constant 0
+return
+function Player.draw 2
+push argument 0
+pop pointer 0
+push constant 512
+push this 1
+call Math.multiply 2
+push this 0
+add
+pop local 0
+push this 2
+not
+if-goto IF_TRUE0
+goto IF_FALSE0
+label IF_TRUE0
+push local 0
+call Draw.player 1
+pop temp 0
+goto IF_END0
+label IF_FALSE0
+push this 3
+call Ball.color 1
+pop local 1
+push local 1
+push constant 0
+eq
+if-goto IF_TRUE1
+goto IF_FALSE1
+label IF_TRUE1
+push local 0
+call Draw.player_holding_white_ball 1
+pop temp 0
+label IF_FALSE1
+push local 1
+push constant 1
+eq
+if-goto IF_TRUE2
+goto IF_FALSE2
+label IF_TRUE2
+push local 0
+call Draw.player_holding_grey_ball 1
+pop temp 0
+label IF_FALSE2
+push local 1
+push constant 2
+eq
+if-goto IF_TRUE3
+goto IF_FALSE3
+label IF_TRUE3
+push local 0
+call Draw.player_holding_black_ball 1
+pop temp 0
+label IF_FALSE3
+label IF_END0
+push constant 0
+return
+function Player.is_at 0
+push argument 0
+pop pointer 0
+push this 0
+push argument 1
+eq
+push this 1
+push argument 2
+eq
+and
+return
+function Player.x 0
+push argument 0
+pop pointer 0
+push this 0
+return
+function Player.y 0
+push argument 0
+pop pointer 0
+push this 1
+return
+function Player.has_ball 0
+push argument 0
+pop pointer 0
+push this 2
+return
+function Player.pickBall 0
+push argument 0
+pop pointer 0
+push constant 0
+not
+pop this 2
+push argument 1
+pop this 3
+push pointer 0
+call Player.draw 1
+pop temp 0
+push constant 0
+return
+function Player.dropBall 0
+push argument 0
+pop pointer 0
+push constant 0
+pop this 2
+push pointer 0
+call Player.draw 1
+pop temp 0
+push this 3
+return
+function Player.moveUp 0
+push argument 0
+pop pointer 0
+push this 1
+push constant 1
+sub
+pop this 1
+push constant 0
+return
+function Player.moveDown 0
+push argument 0
+pop pointer 0
+push this 1
+push constant 1
+add
+pop this 1
+push constant 0
+return
+function Player.moveLeft 0
+push argument 0
+pop pointer 0
+push this 0
+push constant 1
+sub
+pop this 0
+push constant 0
+return
+function Player.moveRight 0
+push argument 0
+pop pointer 0
+push this 0
+push constant 1
+add
+pop this 0
+push constant 0
+return
